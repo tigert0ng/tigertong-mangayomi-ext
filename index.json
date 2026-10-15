@@ -1,0 +1,14 @@
+[
+  {
+    "name": "TruyenVI",
+    "lang": "vi",
+    "baseUrl": "https://truyenvi.com",
+    "iconUrl": "https://truyenvi.com/img/ktt_logo.png",
+    "typeSource": "single",
+    "itemType": 0,
+    "isNsfw": true,
+    "version": "0.0.1",
+    "pkgPath": "manga/src/vi/truyenvi.js",
+    "sourceCodeUrl": "https://tigert0ng.github.io/tigertong-mangayomi-ext/manga/src/vi/truyenvi.js"
+  }
+]
