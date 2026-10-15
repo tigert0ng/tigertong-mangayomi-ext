@@ -7,7 +7,7 @@ const mangayomiSources = [
     "iconUrl": "https://meosss.com/wp-content/uploads/2026/04/cropped-MzUOZRfMIv1BjPjCwKeiSpTYupVpfFEGI3s23FVX-192x192.webp",
     "typeSource": "single",
     "itemType": 0,
-    "version": "0.0.1",
+    "version": "0.0.2",
     "pkgPath": "manga/src/vi/meosss.js",
     "isNsfw": true
   }
@@ -208,16 +208,33 @@ class DefaultExtension extends MProvider {
 
   // ---------- reader ----------
 
-  // Ảnh trang nằm sẵn trong HTML: <div id="chapter-content"><img src="https://cdn.meosss.com/chapters/..">
+  // Ảnh trang nằm sẵn trong HTML trong #chapter-content. Có 2 dạng:
+  //  - ảnh đầu (eager):   <img src="https://.../0001.jpg">
+  //  - ảnh sau (lazy):    <img data-original-src="https://.../0002.jpg" src="data:image/svg+xml,...">
+  // => phải ưu tiên data-original-src; src của ảnh lazy chỉ là ảnh giữ chỗ (data: URI).
   async getPageList(url) {
     const res = await this.client.get(this.absUrl(url), this.getHeaders());
     const doc = new Document(res.body);
     const pages = [];
+    const seen = {};
     for (const img of doc.select("#chapter-content img")) {
-      const src = img.attr("data-src") || img.attr("src");
-      if (src && src.startsWith("http")) {
-        pages.push({ url: src, headers: { "Referer": this.source.baseUrl + "/" } });
+      const candidates = [
+        img.attr("data-original-src"),
+        img.attr("data-src"),
+        img.attr("data-lazy-src"),
+        img.attr("data-original"),
+        img.attr("src")
+      ];
+      let src = "";
+      for (const c of candidates) {
+        if (c && c.trim().startsWith("http")) {
+          src = c.trim();
+          break;
+        }
       }
+      if (!src || seen[src]) continue;
+      seen[src] = true;
+      pages.push({ url: src, headers: { "Referer": this.source.baseUrl + "/" } });
     }
     return pages;
   }
