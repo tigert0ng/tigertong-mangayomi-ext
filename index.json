@@ -21,5 +21,28 @@
     "notes": "",
     "pkgPath": "manga/src/vi/truyenvi.js",
     "sourceCodeUrl": "https://raw.githubusercontent.com/tigert0ng/tigertong-mangayomi-ext/main/manga/src/vi/truyenvi.js"
+  },
+  {
+    "name": "Meosss",
+    "id": 518374902,
+    "lang": "vi",
+    "baseUrl": "https://meosss.com",
+    "apiUrl": "",
+    "iconUrl": "https://meosss.com/wp-content/uploads/2026/04/cropped-MzUOZRfMIv1BjPjCwKeiSpTYupVpfFEGI3s23FVX-192x192.webp",
+    "typeSource": "single",
+    "itemType": 0,
+    "isManga": true,
+    "isNsfw": true,
+    "hasCloudflare": false,
+    "isFullData": false,
+    "dateFormat": "",
+    "dateFormatLocale": "",
+    "version": "0.0.1",
+    "appMinVerReq": "0.5.0",
+    "additionalParams": "",
+    "sourceCodeLanguage": 1,
+    "notes": "",
+    "pkgPath": "manga/src/vi/meosss.js",
+    "sourceCodeUrl": "https://raw.githubusercontent.com/tigert0ng/tigertong-mangayomi-ext/main/manga/src/vi/meosss.js"
   }
 ]
