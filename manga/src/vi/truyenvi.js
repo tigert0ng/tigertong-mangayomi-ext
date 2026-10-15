@@ -7,7 +7,7 @@ const mangayomiSources = [
     "iconUrl": "https://truyenvi.com/img/ktt_logo.png",
     "typeSource": "single",
     "itemType": 0,
-    "version": "0.0.1",
+    "version": "0.0.2",
     "pkgPath": "manga/src/vi/truyenvi.js",
     "isNsfw": true
   }
