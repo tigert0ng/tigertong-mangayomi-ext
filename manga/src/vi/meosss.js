@@ -7,7 +7,7 @@ const mangayomiSources = [
     "iconUrl": "https://meosss.com/wp-content/uploads/2026/04/cropped-MzUOZRfMIv1BjPjCwKeiSpTYupVpfFEGI3s23FVX-192x192.webp",
     "typeSource": "single",
     "itemType": 0,
-    "version": "0.0.2",
+    "version": "0.0.3",
     "pkgPath": "manga/src/vi/meosss.js",
     "isNsfw": true
   }
@@ -32,6 +32,25 @@ class DefaultExtension extends MProvider {
       "User-Agent":
         "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36"
     };
+  }
+
+  // Sửa lỗi font: nếu app giải mã nhầm UTF-8 thành Latin-1/cp1252 (vd "Ã¡" thay vì "á")
+  // thì đổi ngược về byte rồi giải mã lại UTF-8. Chuỗi đã đúng thì giữ nguyên.
+  fixEncoding(s) {
+    if (!s || !/[\u00C2\u00C3\u00C4\u00C6\u00E1][\u0080-\u00BF\u0152-\u2122]/.test(s)) return s;
+    const cp = {0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F};
+    try {
+      let bin = "";
+      for (let i = 0; i < s.length; i++) {
+        let c = s.charCodeAt(i);
+        if (cp[c] !== undefined) c = cp[c];
+        if (c > 255) return s; // có ký tự thật ngoài Latin-1 => chuỗi không bị lỗi kiểu này
+        bin += String.fromCharCode(c);
+      }
+      return decodeURIComponent(escape(bin));
+    } catch (e) {
+      return s;
+    }
   }
 
   absUrl(u) {
@@ -85,7 +104,7 @@ class DefaultExtension extends MProvider {
 
   async getListPage(path) {
     const res = await this.client.get(this.source.baseUrl + path, this.getHeaders());
-    return this.parseList(res.body);
+    return this.parseList(this.fixEncoding(res.body));
   }
 
   // ---------- list endpoints ----------
@@ -109,7 +128,7 @@ class DefaultExtension extends MProvider {
     if (page > 1) return { list: [], hasNextPage: false };
     const url = this.source.baseUrl + "/wp-json/initlise/v1/search?term=" + encodeURIComponent(query);
     const res = await this.client.get(url, this.getHeaders());
-    const items = JSON.parse(res.body);
+    const items = JSON.parse(this.fixEncoding(res.body));
     const list = [];
     for (const it of items) {
       if (it.post_type && it.post_type !== "manga") continue;
@@ -148,7 +167,7 @@ class DefaultExtension extends MProvider {
   async getDetail(url) {
     const fullUrl = this.absUrl(url);
     const res = await this.client.get(fullUrl, this.getHeaders());
-    const doc = new Document(res.body);
+    const doc = new Document(this.fixEncoding(res.body));
 
     const titleEl = doc.selectFirst("#manga-title");
     const name = titleEl ? titleEl.text.trim() : "";
@@ -191,7 +210,7 @@ class DefaultExtension extends MProvider {
     const base = fullUrl.replace(/\/$/, "");
     for (let p = 2; p <= maxPage; p++) {
       const r = await this.client.get(base + "/chap/page/" + p + "/", this.getHeaders());
-      this.parseChapters(new Document(r.body), chapters, seen);
+      this.parseChapters(new Document(this.fixEncoding(r.body)), chapters, seen);
     }
 
     return {
@@ -214,7 +233,7 @@ class DefaultExtension extends MProvider {
   // => phải ưu tiên data-original-src; src của ảnh lazy chỉ là ảnh giữ chỗ (data: URI).
   async getPageList(url) {
     const res = await this.client.get(this.absUrl(url), this.getHeaders());
-    const doc = new Document(res.body);
+    const doc = new Document(this.fixEncoding(res.body));
     const pages = [];
     const seen = {};
     for (const img of doc.select("#chapter-content img")) {
